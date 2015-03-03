@@ -37,6 +37,7 @@ typedef struct {
 	char field[5];
 	int day_iter;
 	int scan_iter;
+        int grid_only;
 
 } MapMetaData;
 

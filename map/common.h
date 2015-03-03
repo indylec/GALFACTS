@@ -34,7 +34,7 @@ enum RFIFlags {	RFI_NONE =		0x0000,
 				RFI_SPAN = 0x1000,
 				RFI_OUTOFBAND = 0x2000,
 };
-
+§
 
 int get_date_dirs(const char * dir, char ** datedirs[]);
 int get_flux_files(const char * dir, char ** fluxfiles[]);

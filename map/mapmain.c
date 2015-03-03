@@ -148,79 +148,98 @@ static void create_fits_cube(FluxWappData * wappdata, char * wapp, MapMetaData *
 		while(chan < md->highchan)
 			{
 			printf("Channel: %i \n", chan);
-			//printf("Reading data ...\n"); 
+			//printf("Reading data ...\n");
 
-			fluxwappdata_readchan_binary(md->field, md->band, wappdata, chan, BASKETWEAVE, md->avg, md->decmin, md->decmax);
+			if(md->grid_only == 1)
+			  {
+			  fluxwappdata_readchan_binary(md->field, md->band, wappdata, chan, GRID, md->avg, md->decmin, md->decmax);
 
-                        printf("Fix pointing\n");
-                        fix_pointing(md->field, wappdata);
-
-			//printf("Apply the feed coupling mueller matrix correction...\n");
-			correct_UV(wappdata,chan,md);
+			  //printf("Gridding ...\n"); 
+			  grid_data(wappdata, md, dataI, dataQ, dataU, dataV, weight);
+		 	  //printf("Writing fits data ...\n"); 
+			  write_fits_planes(dataI, dataQ, dataU, dataV, weight);
+			  if(md->avg == 0) chan++; else chan += md->avg;
 			
-			//printf("Apply the calibrator correction tables...\n");
-			//corrections(wappdata,chan,md);
-
-			//abs_cal(wappdata,chan,md);
-
-			//printf("Removing DEC dependence...\n"); 
-			calculate_dec_dependence(wappdata, md->dec_order, chan, cIc, cQc, cUc, cVc, md->avg,md->field);
-			
-			//printf("Apply the calibrator correction tables...\n");
-			//corrections(wappdata,chan,md);
-
-
-//			printf("Apply the position angle correction...\n");
-//			pa_corr(wappdata,chan,md);
-
-//			printf("Apply the spectral Index correction...\n");
-//			spec_corr(wappdata,chan,md);
-
-			//printf("Beam gain calibration...\n"); 		
-			//if(cal_flag) beam_gain_calibration_table(wappdata, cal_low, cal_high, cal_table, chan); 
-		
-			//printf("Determine scan lines ...\n"); 
-			determine_scan_lines(wappdata, md->decmin, md->decmax);	
-			//printf("Finding crossing points ...\n"); 
-			find_intersections(wappdata);							
-			//printf("Performing basketweaving from file...\n");
-			//balance_data(wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
-			if( chan == 0 ) {
-					write_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
-					//read_apply_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order );
-			}
-			else {
-					//read_apply_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order );
-					balance_data(wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
-
-			}
-
-
-			//printf("Apply the calibrator correction tables...\n");
-			corrections(wappdata,chan,md);
-
-			//printf("Apply the calibrator correction tables...\n");
-			QUVcorr(wappdata,chan,md);
-
-			printf("Absolute Cal correction\n");
-			abs_cal(wappdata,chan,md);
-
-			//printf("Writing basketweaved time series ...\n");
-			if( chan == 0 ) 
-			fluxwappdata_writechan(wappdata,chan);
-			//fluxwappdata_writechan_binary(wappdata,chan);
-			//fluxwappdata_writechan_binary_single(wappdata,chan);
-
-			//printf("Gridding ...\n"); 
-			grid_data(wappdata, md, dataI, dataQ, dataU, dataV, weight);
-			//printf("Writing fits data ...\n"); 
-			write_fits_planes(dataI, dataQ, dataU, dataV, weight);
-			if(md->avg == 0) chan++; else chan += md->avg;
-			
-			for(i=0; i<wappdata->numDays; i++) 
+			  for(i=0; i<wappdata->numDays; i++) 
 				{
 				free(wappdata->daydata[i].records);
 				}
+			  
+			  }
+			else
+			  {
+			  fluxwappdata_readchan_binary(md->field, md->band, wappdata, chan, BASKETWEAVE, md->avg, md->decmin, md->decmax);
+			  
+			  printf("Fix pointing\n");
+			  fix_pointing(md->field, wappdata);
+
+			  //printf("Apply the feed coupling mueller matrix correction...\n");
+			  correct_UV(wappdata,chan,md);
+			
+			  //printf("Apply the calibrator correction tables...\n");
+			  //corrections(wappdata,chan,md);
+
+			  //abs_cal(wappdata,chan,md);
+
+			  //printf("Removing DEC dependence...\n"); 
+			  calculate_dec_dependence(wappdata, md->dec_order, chan, cIc, cQc, cUc, cVc, md->avg,md->field);
+			
+			  //printf("Apply the calibrator correction tables...\n");
+			  //corrections(wappdata,chan,md);
+
+
+			  //			printf("Apply the position angle correction...\n");
+			  //			pa_corr(wappdata,chan,md);
+
+			  //			printf("Apply the spectral Index correction...\n");
+			  //			spec_corr(wappdata,chan,md);
+
+			  //printf("Beam gain calibration...\n"); 		
+			  //if(cal_flag) beam_gain_calibration_table(wappdata, cal_low, cal_high, cal_table, chan); 
+		
+			  //printf("Determine scan lines ...\n"); 
+			  determine_scan_lines(wappdata, md->decmin, md->decmax);	
+			  //printf("Finding crossing points ...\n"); 
+			  find_intersections(wappdata);							
+			  //printf("Performing basketweaving from file...\n");
+			  //balance_data(wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
+			  if( chan == 0 ) {
+			    write_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
+			    //read_apply_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order );
+			  }
+			  else {
+			    //read_apply_balance_data( wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order );
+			    balance_data(wappdata, md->day_iter, md->scan_iter, md->balgain, md->balepsilon, md->bw_order);
+
+			  }
+
+
+			  //printf("Apply the calibrator correction tables...\n");
+			  corrections(wappdata,chan,md);
+
+			  //printf("Apply the calibrator correction tables...\n");
+			  QUVcorr(wappdata,chan,md);
+
+			  printf("Absolute Cal correction\n");
+			  abs_cal(wappdata,chan,md);
+
+			  //printf("Writing basketweaved time series ...\n");
+			  if( chan == 0 ) 
+			    fluxwappdata_writechan(wappdata,chan);
+			  //fluxwappdata_writechan_binary(wappdata,chan);
+			  //fluxwappdata_writechan_binary_single(wappdata,chan);
+
+			  //printf("Gridding ...\n"); 
+			  grid_data(wappdata, md, dataI, dataQ, dataU, dataV, weight);
+			  //printf("Writing fits data ...\n"); 
+			  write_fits_planes(dataI, dataQ, dataU, dataV, weight);
+			  if(md->avg == 0) chan++; else chan += md->avg;
+			
+			  for(i=0; i<wappdata->numDays; i++) 
+			    {
+			      free(wappdata->daydata[i].records);
+			    }
+			  }
 			}
 	
 	//printf("Finishing fits files\n");
@@ -261,7 +280,7 @@ int scan_iter = 0;
 /* Process command line arguments */ 
 /* Convert args into more usable units were required */
 
-if(argc != 25){printf("Usage: %s <parameters_list>\n", argv[0]); return EXIT_FAILURE;}
+if(argc != 26){printf("Usage: %s <parameters_list>\n", argv[0]); return EXIT_FAILURE;}
 
 wapp = argv[1];
 md.fcen = (float) atof(argv[2]);
@@ -288,6 +307,7 @@ md.band = atoi(argv[21]);
 md.fwhm = atoi(argv[22]); //2.0; //TODO: paramaterize this
 md.day_iter = atoi(argv[23]);
 md.scan_iter = atoi(argv[24]);
+md.grid_only = atoi(argv[25]) //grid-only mode: 1 if on, 0 if off
 
 
 

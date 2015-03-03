@@ -568,6 +568,12 @@ for(m=0; m<wappdata->numDays; m++)
 			{
 				sprintf(filename, "%s/%s/fluxtime.dat", daydata->mjd, beamno);
 				sprintf(configfilename, "%s/%s/fluxtime.dat_cfg", daydata->mjd, beamno);
+
+			}
+			if(id == GRID)
+			{
+				sprintf(filename, "%s/%s/destriped.dat", daydata->mjd, beamno);
+				sprintf(configfilename, "%s/%s/destriped.dat_cfg", daydata->mjd, beamno); //these are dummy files for now, as we are only reading in the average data
 			}
 		}
 		else
